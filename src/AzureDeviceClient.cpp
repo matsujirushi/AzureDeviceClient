@@ -1,6 +1,7 @@
 #include "AzureDeviceClient.h"
 #include <stdlib.h>
 #include <iothubtransportmqtt.h>
+#include <iothub_client_options.h>
 #include <azureiotcerts.h>
 
 class MessageContext
@@ -32,6 +33,8 @@ AzureDeviceClient::AzureDeviceClient()
 	_ClientHandle = NULL;
 	_Connected = false;
 
+	_X509Certificate = NULL;
+	_X509PrivateKey = NULL;
 	_ProductId = NULL;
 	_KeepAlive = 240;
 	_LogTrace = false;
@@ -43,6 +46,16 @@ AzureDeviceClient::AzureDeviceClient()
 AzureDeviceClient::~AzureDeviceClient()
 {
 	Disconnect();
+}
+
+void AzureDeviceClient::SetX509Certificate(const char* certificate)
+{
+	_X509Certificate = certificate;
+}
+
+void AzureDeviceClient::SetX509PrivateKey(const char* privateKey)
+{
+	_X509PrivateKey = privateKey;
 }
 
 void AzureDeviceClient::SetProductId(const char* productId)
@@ -88,13 +101,12 @@ bool AzureDeviceClient::ConnectIoTHub(const char* connectionString)
 	// set options
 	// https://github.com/Azure/azure-iot-sdk-c/blob/master/doc/Iothub_sdk_options.md
 
-	if (_ProductId != NULL)
-	{
-		if (IoTHubClient_LL_SetOption(_ClientHandle, "product_info", _ProductId) != IOTHUB_CLIENT_OK) abort();
-	}
+	if (_X509Certificate != NULL) if (IoTHubClient_LL_SetOption(_ClientHandle, OPTION_X509_CERT, _X509Certificate) != IOTHUB_CLIENT_OK) abort();
+	if (_X509PrivateKey != NULL) if (IoTHubClient_LL_SetOption(_ClientHandle, OPTION_X509_PRIVATE_KEY, _X509PrivateKey) != IOTHUB_CLIENT_OK) abort();
+	if (_ProductId != NULL) if (IoTHubClient_LL_SetOption(_ClientHandle, OPTION_PRODUCT_INFO, _ProductId) != IOTHUB_CLIENT_OK) abort();
 	if (IoTHubClient_LL_SetOption(_ClientHandle, "TrustedCerts", certificates) != IOTHUB_CLIENT_OK) abort();
-	if (IoTHubClient_LL_SetOption(_ClientHandle, "logtrace", &_LogTrace) != IOTHUB_CLIENT_OK) abort();
-	if (IoTHubClient_LL_SetOption(_ClientHandle, "keepalive", &_KeepAlive) != IOTHUB_CLIENT_OK) abort();
+	if (IoTHubClient_LL_SetOption(_ClientHandle, OPTION_LOG_TRACE, &_LogTrace) != IOTHUB_CLIENT_OK) abort();
+	if (IoTHubClient_LL_SetOption(_ClientHandle, OPTION_KEEP_ALIVE, &_KeepAlive) != IOTHUB_CLIENT_OK) abort();
 
 	if (IoTHubClient_LL_SetConnectionStatusCallback(_ClientHandle, ConnectionStateCallback, this) != IOTHUB_CLIENT_OK) abort();
 	if (IoTHubClient_LL_SetDeviceTwinCallback(_ClientHandle, DeviceTwinCallback, this) != IOTHUB_CLIENT_OK) abort();

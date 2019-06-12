@@ -8,6 +8,8 @@ class AzureDeviceClient
 private:
 	IOTHUB_CLIENT_LL_HANDLE _ClientHandle;
 	bool _Connected;
+	const char* _X509Certificate;
+	const char* _X509PrivateKey;
 	const char* _ProductId;
 	int _KeepAlive;
 	bool _LogTrace;
@@ -23,6 +25,8 @@ public:
 	AzureDeviceClient();
 	virtual ~AzureDeviceClient();
 
+	void SetX509Certificate(const char* certificate);
+	void SetX509PrivateKey(const char* privateKey);
 	void SetProductId(const char* productId);
 	void SetKeepAlive(int keepAlive);
 	void SetLogTrace(bool on);
