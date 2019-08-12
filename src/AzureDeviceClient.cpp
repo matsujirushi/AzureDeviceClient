@@ -2,7 +2,11 @@
 #include <stdlib.h>
 #include <iothubtransportmqtt.h>
 #include <iothub_client_options.h>
+#if defined ARDUINO_ARCH_SEEEDJP_REBUTTON
 #include <azureiotcerts.h>
+#else
+#include <certs.h>
+#endif
 
 class MessageContext
 {
